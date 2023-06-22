@@ -6,7 +6,8 @@ def DataCsv():
     """ПОЛУЧИТЬ JSON ИЗ ДАННЫХ CSV ФАЙЛА"""
     reader = []
     stroka = ''
-    with open('ALIUM.csv', newline='') as datacsv:
+    # пофиксить чтение, можно через сплит по разделению ';'
+    with open('ДАННЫЕ.csv', newline='') as datacsv:  
         read = csv.reader(datacsv)
         for row in read:
             stroka = ''.join(row)
@@ -83,7 +84,7 @@ def Ceps(elempin):
 def Tabl(ceps):
 
     """ФУНКЦИЯ ФОРМИРУЕТ СПИСОК ИЗ ПОСЛЕДОВАТЕЛЬНОСТИ ДАННЫХ ДЛЯ ТАБЛИЦЫ ЦЕПЕЙ
-    ФОРМАТ:['| 1-1 | R3/1 | R9/2 |' ...]"""
+    ФОРМАТ:['1-1 , R3/1 , R9/2 ,' ...,]"""
 
     tablcep = []
     number = 1
@@ -93,36 +94,88 @@ def Tabl(ceps):
             KS = list(Vs[j].keys())[0]
             VS = list(Vs[j].values())[0]
             if Vs[j] == Vs[-1]:
-                tablcep.append((f'{number}—{j+1}*', f'{KS}/{VS}', f'{list(Vs[0].keys())[0]}/{list(Vs[0].values())[0]}'))
+                tablcep.append((
+                    f'{number}—{j+1}*',
+                    f'{KS}/{VS}',
+                    f'{list(Vs[0].keys())[0]}/{list(Vs[0].values())[0]}'))
                 tablcep.append('')
                 tablcep.append('')
             elif len(Vs) == 2:
-                tablcep.append((f'{number}', f'{KS}/{VS}', f'{list(Vs[j+1].keys())[0]}/{list(Vs[j+1].values())[0]}'))
+                tablcep.append((
+                    f'{number}',
+                    f'{KS}/{VS}',
+                    f'{list(Vs[j+1].keys())[0]}/{list(Vs[j+1].values())[0]}'))
                 tablcep.append('')
                 tablcep.append('')
                 break
             else:
-                tablcep.append((f'{number}—{j+1}', f'{KS}/{VS}', f'{list(Vs[j+1].keys())[0]}/{list(Vs[j+1].values())[0]}'))
+                tablcep.append((
+                    f'{number}—{j+1}',
+                    f'{KS}/{VS}',
+                    f'{list(Vs[j+1].keys())[0]}/{list(Vs[j+1].values())[0]}'))
                 tablcep.append('')
         number += 2
     return tablcep
 
 
-D = DataCsv()
-E = ElemPin(D)
-C = Ceps(E)
-T = Tabl(C)
+def TablElement(ceps):
+    """ФУНКЦИЯ ФОРМИРУЕТ СПИСОК ИЗ ПОСЛЕДОВАТЕЛЬНОСТИ
+    ДАННЫХ ДЛЯ ФОРМИРОВАНИЯ ТАБЛИЦЫ ЦЕПЕЙ, КОТОРАЯ БУДЕТ
+    ФОРМИРОВАТЬСЯ В ФАЙЛЕ elements.py.
+    ДАННЫЕ БУДУТ ЗАПИСЫВАТЬСЯ В PODGOTOSKA.csv.
+    ФОРМАТ:['1-1 , R3 , 1 , R9 , 2 ,' ...,]"""
 
+    tabl = []
+    number = 1
+    for i in range(len(ceps)):
+        Vs = list(ceps[i].values())[0]
+        for j in range(len(Vs)):
+            KS = list(Vs[j].keys())[0]
+            VS = list(Vs[j].values())[0]
+            if Vs[j] == Vs[-1]:
+                tabl.append((f'{number}—{j+1}*',
+                             f'{KS}',
+                             f'{VS}',
+                             f'{list(Vs[0].keys())[0]}',
+                             f'{list(Vs[0].values())[0]}'))
+            elif len(Vs) == 2:
+                tabl.append((f'{number}',
+                             f'{KS}',
+                             f'{VS}',
+                             f'{list(Vs[j+1].keys())[0]}',
+                             f'{list(Vs[j+1].values())[0]}'))
+                break
+            else:
+                tabl.append((f'{number}—{j+1}',
+                             f'{KS}',
+                             f'{VS}',
+                             f'{list(Vs[j+1].keys())[0]}',
+                             f'{list(Vs[j+1].values())[0]}'))
+        number += 2
+    return tabl
+
+
+D = DataCsv()
+EP = ElemPin(D)
+C = Ceps(EP)
+T = Tabl(C)
+TE = TablElement(C)
 
 n1 = "номер"
 n2 = "элемент"
 
-with open('TABLCEP.csv', 'w', newline='') as file:
+with open('ТАБЛИЦА ЦЕПЕЙ.csv', 'w', newline='') as file:
     w = csv.writer(file, delimiter=';')
     w.writerow((n1, n2, n2))
 
 for i in T:
-    print(i)
-    with open('TABLCEP.csv', 'a', newline='') as file:
+    # print(i)
+    with open('ТАБЛИЦА ЦЕПЕЙ.csv', 'a', newline='') as file:
+        w = csv.writer(file, delimiter=';')
+        w.writerow(i)
+
+for i in TE:
+    # print(i)
+    with open('ДЛЯ АДРЕСОВ.csv', 'a', newline='') as file:
         w = csv.writer(file, delimiter=';')
         w.writerow(i)
